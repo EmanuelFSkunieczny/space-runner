@@ -312,6 +312,7 @@ class JoystickManager {
         this.onDirectionChange = null;
         this.decoder = new TextDecoder();
         this.buffer = '';
+        this.disconnecting = false;
     }
 
     async connect() {
@@ -334,10 +335,12 @@ class JoystickManager {
 
     async startReading() {
         if (!this.port || !this.port.readable) return;
+        let localReader;
         try {
-            this.reader = this.port.readable.getReader();
+            localReader = this.port.readable.getReader();
+            this.reader = localReader;
             while (true) {
-                const { value, done } = await this.reader.read();
+                const { value, done } = await localReader.read();
                 if (done) break;
                 this.buffer += this.decoder.decode(value, { stream: true });
                 const lines = this.buffer.split('\n');
@@ -349,11 +352,15 @@ class JoystickManager {
         } catch (e) {
             if (e.name !== 'AbortError') console.error('Serial error:', e);
         } finally {
-            if (this.reader) {
-                this.reader.releaseLock();
+            if (localReader) {
+                try { localReader.releaseLock(); } catch (_) {}
+            }
+            if (this.reader === localReader) {
                 this.reader = null;
             }
-            this.disconnect();
+            if (this.connected) {
+                await this.disconnect();
+            }
         }
     }
 
@@ -370,17 +377,21 @@ class JoystickManager {
         }
     }
 
-    disconnect() {
+    async disconnect() {
+        if (this.disconnecting) return;
+        this.disconnecting = true;
         this.connected = false;
         this.direction = 0;
         if (this.reader) {
-            try { this.reader.cancel(); } catch (_) {}
+            try { await this.reader.cancel(); } catch (_) {}
+            try { this.reader.releaseLock(); } catch (_) {}
             this.reader = null;
         }
         if (this.port) {
-            try { this.port.close(); } catch (_) {}
+            try { await this.port.close(); } catch (_) {}
             this.port = null;
         }
+        this.disconnecting = false;
         // Atualizar UI se o botão existir
         const btn = document.getElementById('btn-connect-joystick');
         const label = document.getElementById('joystick-label');
@@ -976,7 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnJoy) {
         btnJoy.addEventListener('click', async () => {
             if (joystick.connected) {
-                joystick.disconnect();
+                await joystick.disconnect();
                 btnJoy.classList.remove('connected');
                 joyStatus.classList.remove('active');
                 joyLabel.textContent = 'Conectar Joystick';
