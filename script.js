@@ -381,6 +381,13 @@ class JoystickManager {
             try { this.port.close(); } catch (_) {}
             this.port = null;
         }
+        // Atualizar UI se o botão existir
+        const btn = document.getElementById('btn-connect-joystick');
+        const label = document.getElementById('joystick-label');
+        const status = document.getElementById('joystick-status');
+        if (btn) { btn.classList.remove('connected'); btn.disabled = false; }
+        if (label) label.textContent = 'Conectar Joystick';
+        if (status) status.classList.remove('active');
     }
 }
 
@@ -418,11 +425,11 @@ class SpaceRunnerGame {
         // Instância do Gerenciador de Sons
         this.soundManager = new SoundManager();
 
-        // Instância do Gerenciador de Joystick
-        this.joystick = new JoystickManager();
-        this.joystickBtn = document.getElementById('btn-connect-joystick');
-        this.joystickStatus = document.getElementById('joystick-status');
-        this.joystickLabel = document.getElementById('joystick-label');
+        // Instância do Gerenciador de Joystick (compartilhada)
+        if (!window.joystickManager) {
+            window.joystickManager = new JoystickManager();
+        }
+        this.joystick = window.joystickManager;
 
         // Estado do Jogo
         this.isRunning = false;
@@ -468,6 +475,11 @@ class SpaceRunnerGame {
     initDOMEvents() {
         // Botões do Menu
         document.getElementById('btn-play').addEventListener('click', () => {
+            if ('serial' in navigator && !this.joystick.connected) {
+                if (!confirm('Conecte o joystick antes de jogar!\n\nClique em "Conectar Joystick" no menu ou clique OK para jogar sem joystick.')) {
+                    return;
+                }
+            }
             this.soundManager.init();
             this.iniciarJogo();
         });
@@ -518,22 +530,6 @@ class SpaceRunnerGame {
             if (this.ship) {
                 this.ship.gameWidth = this.gameArea.clientWidth;
                 this.ship.gameHeight = this.gameArea.clientHeight;
-            }
-        });
-
-        // Conexão Joystick
-        this.joystickBtn.addEventListener('click', async () => {
-            this.soundManager.init();
-            this.joystickBtn.disabled = true;
-            this.joystickLabel.textContent = 'Conectando...';
-            const ok = await this.joystick.connect();
-            if (ok) {
-                this.joystickBtn.classList.add('connected');
-                this.joystickStatus.classList.add('active');
-                this.joystickLabel.textContent = 'Joystick Conectado';
-            } else {
-                this.joystickBtn.disabled = false;
-                this.joystickLabel.textContent = 'Conectar Joystick';
             }
         });
     }
@@ -663,20 +659,6 @@ class SpaceRunnerGame {
             this.fpsCounter.textContent = `FPS: ${this.fps}`;
             this.frameCount = 0;
             this.fpsTimer = 0;
-
-            // Sincronizar UI do joystick
-            if (this.joystick.connected) {
-                this.joystickBtn.classList.add('connected');
-                this.joystickStatus.classList.add('active');
-                this.joystickLabel.textContent = 'Joystick Conectado';
-                this.joystickBtn.disabled = false;
-            } else {
-                this.joystickBtn.classList.remove('connected');
-                this.joystickStatus.classList.remove('active');
-                if (!this.joystickBtn.disabled) {
-                    this.joystickLabel.textContent = 'Conectar Joystick';
-                }
-            }
         }
 
         // Se não estiver pausado, executa atualização e renderização
@@ -978,4 +960,40 @@ class SpaceRunnerGame {
    ============================================================================ */
 document.addEventListener('DOMContentLoaded', () => {
     window.spaceRunnerApp = new SpaceRunnerGame();
+
+    // --- Conexão do Joystick (menu) ---
+    const joystick = window.spaceRunnerApp.joystick;
+    const btnJoy = document.getElementById('btn-connect-joystick');
+    const joyLabel = document.getElementById('joystick-label');
+    const joyStatus = document.getElementById('joystick-status');
+    const menuJoystick = document.getElementById('menu-joystick');
+
+    // Esconder se Web Serial não for suportada
+    if (!('serial' in navigator)) {
+        if (menuJoystick) menuJoystick.style.display = 'none';
+    }
+
+    if (btnJoy) {
+        btnJoy.addEventListener('click', async () => {
+            if (joystick.connected) {
+                joystick.disconnect();
+                btnJoy.classList.remove('connected');
+                joyStatus.classList.remove('active');
+                joyLabel.textContent = 'Conectar Joystick';
+                return;
+            }
+            btnJoy.disabled = true;
+            joyLabel.textContent = 'Conectando...';
+            const ok = await joystick.connect();
+            btnJoy.disabled = false;
+            if (ok) {
+                btnJoy.classList.add('connected');
+                joyStatus.classList.add('active');
+                joyLabel.textContent = '✓ Joystick Conectado';
+            } else {
+                joyLabel.textContent = 'Conectar Joystick';
+            }
+        });
+    }
+
 });
