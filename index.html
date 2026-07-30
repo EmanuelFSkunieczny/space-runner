@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Space Runner — Desvie, Colete, Sobreviva!</title>
+    <meta name="description"
+        content="Space Runner: um jogo espacial feito com HTML5, CSS3 e JavaScript puro. Controle sua nave, desvie de meteoros e colete cristais de energia!">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ============================================= -->
+    <!-- FUNDO ANIMADO DE ESTRELAS                     -->
+    <!-- ============================================= -->
+    <div id="stars-bg" aria-hidden="true">
+        <div class="star-layer star-layer--1"></div>
+        <div class="star-layer star-layer--2"></div>
+        <div class="star-layer star-layer--3"></div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- TELA INICIAL (MENU)                           -->
+    <!-- ============================================= -->
+    <section id="menu-screen" class="screen active">
+        <div class="menu-container glass-panel">
+            <h1 class="game-title">
+                <span class="title-icon">🚀</span>
+                Space Runner
+            </h1>
+            <p class="game-subtitle">Desvie dos meteoros • Colete cristais • Sobreviva!</p>
+
+            <div class="menu-buttons">
+                <button id="btn-play" class="btn btn--primary" aria-label="Iniciar jogo">
+                    <span class="btn-icon">▶</span> Jogar
+                </button>
+                <button id="btn-how-to-play" class="btn btn--secondary" aria-label="Como jogar">
+                    <span class="btn-icon">❓</span> Como Jogar
+                </button>
+            </div>
+
+            <div class="best-score-display">
+                <span class="best-score-label">🏆 Melhor Pontuação</span>
+                <span id="menu-best-score" class="best-score-value">0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================= -->
+    <!-- TELA "COMO JOGAR"                             -->
+    <!-- ============================================= -->
+    <section id="how-to-play-screen" class="screen">
+        <div class="how-to-play-container glass-panel">
+            <h2>Como Jogar</h2>
+            <div class="instructions-grid">
+                <div class="instruction-card">
+                    <div class="instruction-icon">⌨️</div>
+                    <h3>Desktop</h3>
+                    <p><kbd>←</kbd> <kbd>→</kbd> ou <kbd>A</kbd> <kbd>D</kbd></p>
+                    <p><kbd>P</kbd> Pausar &nbsp; <kbd>R</kbd> Reiniciar</p>
+                </div>
+                <div class="instruction-card">
+                    <div class="instruction-icon">☄️</div>
+                    <h3>Meteoros</h3>
+                    <p>Desvie para não perder vidas!</p>
+                </div>
+                <div class="instruction-card">
+                    <div class="instruction-icon">💎</div>
+                    <h3>Cristais</h3>
+                    <p>Colete para ganhar pontos e subir de nível!</p>
+                </div>
+            </div>
+            <button id="btn-back-menu" class="btn btn--secondary">
+                <span class="btn-icon">↩</span> Voltar
+            </button>
+        </div>
+    </section>
+
+    <!-- ============================================= -->
+    <!-- TELA DO JOGO                                  -->
+    <!-- ============================================= -->
+    <section id="game-screen" class="screen">
+
+        <!-- HUD Superior -->
+        <header id="hud" class="hud glass-panel-hud">
+            <div class="hud-item" title="Pontuação">
+                <span class="hud-label">⭐ Pontos</span>
+                <span id="hud-score" class="hud-value">0</span>
+            </div>
+            <div class="hud-item" title="Vidas">
+                <span class="hud-label">❤️ Vidas</span>
+                <span id="hud-lives" class="hud-value">3</span>
+            </div>
+            <div class="hud-item" title="Tempo">
+                <span class="hud-label">⏱️ Tempo</span>
+                <span id="hud-time" class="hud-value">0s</span>
+            </div>
+            <div class="hud-item" title="Nível">
+                <span class="hud-label">🎯 Nível</span>
+                <span id="hud-level" class="hud-value">1</span>
+            </div>
+            <div class="hud-item hud-item--best" title="Melhor Pontuação">
+                <span class="hud-label">🏆 Melhor</span>
+                <span id="hud-best" class="hud-value">0</span>
+            </div>
+        </header>
+
+        <!-- Área do jogo -->
+        <div id="game-area" role="application" aria-label="Área do jogo Space Runner">
+            <!-- A nave, meteoros, cristais e partículas são criados via JS -->
+        </div>
+
+        <!-- Controles Mobile -->
+        <div id="mobile-controls" class="mobile-controls" aria-label="Controles mobile">
+            <button id="btn-left" class="mobile-btn" aria-label="Mover para esquerda">◀</button>
+            <button id="btn-right" class="mobile-btn" aria-label="Mover para direita">▶</button>
+        </div>
+
+        <!-- Overlay de pausa -->
+        <div id="pause-overlay" class="overlay" hidden>
+            <div class="overlay-content glass-panel">
+                <h2>⏸️ Pausado</h2>
+                <p>Pressione <kbd>P</kbd> para continuar</p>
+            </div>
+        </div>
+
+        <!-- Toast de "Novo Nível" -->
+        <div id="level-up-toast" class="level-toast" hidden>
+            <span>🚀 Nível <span id="toast-level">2</span>!</span>
+        </div>
+
+        <!-- FPS counter (opcional) -->
+        <div id="fps-counter" class="fps-counter">FPS: 60</div>
+
+    </section>
+
+    <!-- ============================================= -->
+    <!-- TELA DE GAME OVER                             -->
+    <!-- ============================================= -->
+    <section id="gameover-screen" class="screen">
+        <div class="gameover-container glass-panel">
+            <h2 class="gameover-title">Game Over</h2>
+
+            <div class="gameover-stats">
+                <div class="stat-row">
+                    <span>⭐ Pontuação Final</span>
+                    <span id="go-score" class="stat-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>⏱️ Tempo Sobrevivido</span>
+                    <span id="go-time" class="stat-value">0s</span>
+                </div>
+                <div class="stat-row">
+                    <span>🎯 Nível Alcançado</span>
+                    <span id="go-level" class="stat-value">1</span>
+                </div>
+                <div class="stat-row highlight">
+                    <span>🏆 Melhor Pontuação</span>
+                    <span id="go-best" class="stat-value">0</span>
+                </div>
+            </div>
+
+            <button id="btn-retry" class="btn btn--primary">
+                <span class="btn-icon">🔄</span> Jogar Novamente
+            </button>
+            <button id="btn-go-menu" class="btn btn--secondary">
+                <span class="btn-icon">🏠</span> Menu
+            </button>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
