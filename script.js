@@ -299,7 +299,94 @@ class Particle {
 
 
 /* ============================================================================
-   6. MOTOR PRINCIPAL DO JOGO (GAME ENGINE)
+   6. GERENCIADOR DE JOYSTICK (Web Serial API)
+   ============================================================================ */
+class JoystickManager {
+    constructor() {
+        this.port = null;
+        this.reader = null;
+        this.direction = 0; // -1 left, 0 idle, 1 right
+        this.connected = false;
+        this.btnA = false;
+        this.btnB = false;
+        this.onDirectionChange = null;
+        this.decoder = new TextDecoder();
+        this.buffer = '';
+    }
+
+    async connect() {
+        try {
+            if (!('serial' in navigator)) {
+                alert('Web Serial API não suportada. Use Chrome ou Edge.');
+                return false;
+            }
+            this.port = await navigator.serial.requestPort();
+            await this.port.open({ baudRate: 115200 });
+            this.connected = true;
+            this.startReading();
+            return true;
+        } catch (e) {
+            if (e.name !== 'NotFoundError') console.error('Joystick connection error:', e);
+            this.disconnect();
+            return false;
+        }
+    }
+
+    async startReading() {
+        if (!this.port || !this.port.readable) return;
+        try {
+            this.reader = this.port.readable.getReader();
+            while (true) {
+                const { value, done } = await this.reader.read();
+                if (done) break;
+                this.buffer += this.decoder.decode(value, { stream: true });
+                const lines = this.buffer.split('\n');
+                this.buffer = lines.pop();
+                for (const line of lines) {
+                    if (line.trim()) this.parse(line.trim());
+                }
+            }
+        } catch (e) {
+            if (e.name !== 'AbortError') console.error('Serial error:', e);
+        } finally {
+            if (this.reader) {
+                this.reader.releaseLock();
+                this.reader = null;
+            }
+            this.disconnect();
+        }
+    }
+
+    parse(data) {
+        const parts = data.split(',');
+        if (parts.length < 8) return;
+
+        this.direction = parseInt(parts[0], 10);
+        this.btnA = parts[1] === '1';
+        this.btnB = parts[2] === '1';
+
+        if (this.onDirectionChange) {
+            this.onDirectionChange(this.direction);
+        }
+    }
+
+    disconnect() {
+        this.connected = false;
+        this.direction = 0;
+        if (this.reader) {
+            try { this.reader.cancel(); } catch (_) {}
+            this.reader = null;
+        }
+        if (this.port) {
+            try { this.port.close(); } catch (_) {}
+            this.port = null;
+        }
+    }
+}
+
+
+/* ============================================================================
+   7. MOTOR PRINCIPAL DO JOGO (GAME ENGINE)
    ============================================================================ */
 class SpaceRunnerGame {
     constructor() {
@@ -330,6 +417,12 @@ class SpaceRunnerGame {
 
         // Instância do Gerenciador de Sons
         this.soundManager = new SoundManager();
+
+        // Instância do Gerenciador de Joystick
+        this.joystick = new JoystickManager();
+        this.joystickBtn = document.getElementById('btn-connect-joystick');
+        this.joystickStatus = document.getElementById('joystick-status');
+        this.joystickLabel = document.getElementById('joystick-label');
 
         // Estado do Jogo
         this.isRunning = false;
@@ -425,6 +518,22 @@ class SpaceRunnerGame {
             if (this.ship) {
                 this.ship.gameWidth = this.gameArea.clientWidth;
                 this.ship.gameHeight = this.gameArea.clientHeight;
+            }
+        });
+
+        // Conexão Joystick
+        this.joystickBtn.addEventListener('click', async () => {
+            this.soundManager.init();
+            this.joystickBtn.disabled = true;
+            this.joystickLabel.textContent = 'Conectando...';
+            const ok = await this.joystick.connect();
+            if (ok) {
+                this.joystickBtn.classList.add('connected');
+                this.joystickStatus.classList.add('active');
+                this.joystickLabel.textContent = 'Joystick Conectado';
+            } else {
+                this.joystickBtn.disabled = false;
+                this.joystickLabel.textContent = 'Conectar Joystick';
             }
         });
     }
@@ -554,6 +663,20 @@ class SpaceRunnerGame {
             this.fpsCounter.textContent = `FPS: ${this.fps}`;
             this.frameCount = 0;
             this.fpsTimer = 0;
+
+            // Sincronizar UI do joystick
+            if (this.joystick.connected) {
+                this.joystickBtn.classList.add('connected');
+                this.joystickStatus.classList.add('active');
+                this.joystickLabel.textContent = 'Joystick Conectado';
+                this.joystickBtn.disabled = false;
+            } else {
+                this.joystickBtn.classList.remove('connected');
+                this.joystickStatus.classList.remove('active');
+                if (!this.joystickBtn.disabled) {
+                    this.joystickLabel.textContent = 'Conectar Joystick';
+                }
+            }
         }
 
         // Se não estiver pausado, executa atualização e renderização
@@ -576,7 +699,13 @@ class SpaceRunnerGame {
         const currentMeteorInterval = Math.max(200, this.meteorSpawnInterval - t * 10);
         const currentCrystalInterval = Math.max(500, this.crystalSpawnInterval - t * 12);
 
-        // 1. Atualizar Nave
+        // 1. Input do Joystick (sobrescreve teclado se conectado)
+        if (this.ship && this.joystick.connected) {
+            this.ship.isMovingLeft = this.joystick.direction === -1;
+            this.ship.isMovingRight = this.joystick.direction === 1;
+        }
+
+        // 2. Atualizar Nave
         if (this.ship) {
             this.ship.update();
         }
@@ -845,7 +974,7 @@ class SpaceRunnerGame {
 
 
 /* ============================================================================
-   7. INICIALIZAÇÃO DA APLICAÇÃO QUANDO O DOM ESTIVER PRONTO
+   8. INICIALIZAÇÃO DA APLICAÇÃO QUANDO O DOM ESTIVER PRONTO
    ============================================================================ */
 document.addEventListener('DOMContentLoaded', () => {
     window.spaceRunnerApp = new SpaceRunnerGame();

@@ -664,7 +664,64 @@ kbd {
 }
 
 /* --------------------------------------------------------------------------
-   13. TELA DE GAME OVER
+   13. BARRA DO JOYSTICK (CONEXÃO SERIAL)
+   -------------------------------------------------------------------------- */
+.joystick-bar {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 1rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.joystick-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-glass);
+    border-radius: 50px;
+    color: var(--text-main);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.joystick-btn:hover {
+    background: rgba(0, 242, 254, 0.2);
+    border-color: var(--primary);
+}
+
+.joystick-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.joystick-btn.connected {
+    background: rgba(0, 242, 254, 0.15);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.joystick-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: background 0.3s;
+}
+
+.joystick-status.active {
+    background: #00f2fe;
+    box-shadow: 0 0 8px var(--primary-glow);
+}
+
+/* --------------------------------------------------------------------------
+   14. TELA DE GAME OVER
    -------------------------------------------------------------------------- */
 .gameover-title {
     font-family: var(--font-heading);
@@ -703,7 +760,7 @@ kbd {
 }
 
 /* --------------------------------------------------------------------------
-   14. RESPONSIVIDADE PEQUENAS TELAS
+   15. RESPONSIVIDADE PEQUENAS TELAS
    -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
     .game-title {
