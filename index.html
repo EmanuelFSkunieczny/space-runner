@@ -155,33 +155,54 @@
     <!-- ============================================= -->
     <section id="gameover-screen" class="screen">
         <div class="gameover-container glass-panel">
-            <h2 class="gameover-title">Game Over</h2>
 
-            <div class="gameover-stats">
-                <div class="stat-row">
-                    <span>⭐ Pontuação Final</span>
-                    <span id="go-score" class="stat-value">0</span>
+            <!-- Cabeçalho Dinâmico e Humanizado -->
+            <div class="gameover-header">
+                <div id="go-avatar" class="go-avatar">💥</div>
+                <h2 id="go-title" class="gameover-title">Fim de Jogo</h2>
+                <div id="go-rank-badge" class="go-rank-badge">👩‍🚀 Cadete Recruta</div>
+            </div>
+
+            <!-- Banner de Novo Recorde -->
+            <div id="go-new-record-banner" class="new-record-banner" hidden>
+                ✨ NOVO RECORDE ALCANÇADO! 🎉
+            </div>
+
+            <!-- Grid de Estatísticas em Cards -->
+            <div class="gameover-stats-grid">
+                <div class="stat-card stat-card--score">
+                    <span class="stat-card-icon">⭐</span>
+                    <span class="stat-card-label">Pontuação</span>
+                    <span id="go-score" class="stat-card-value">0</span>
                 </div>
-                <div class="stat-row">
-                    <span>⏱️ Tempo Sobrevivido</span>
-                    <span id="go-time" class="stat-value">0s</span>
+                <div class="stat-card stat-card--best">
+                    <span class="stat-card-icon">🏆</span>
+                    <span class="stat-card-label">Recorde</span>
+                    <span id="go-best" class="stat-card-value">0</span>
                 </div>
-                <div class="stat-row">
-                    <span>🎯 Nível Alcançado</span>
-                    <span id="go-level" class="stat-value">1</span>
+                <div class="stat-card">
+                    <span class="stat-card-icon">⏱️</span>
+                    <span class="stat-card-label">Sobrevivência</span>
+                    <span id="go-time" class="stat-card-value">0s</span>
                 </div>
-                <div class="stat-row highlight">
-                    <span>🏆 Melhor Pontuação</span>
-                    <span id="go-best" class="stat-value">0</span>
+                <div class="stat-card">
+                    <span class="stat-card-icon">🎯</span>
+                    <span class="stat-card-label">Nível</span>
+                    <span id="go-level" class="stat-card-value">1</span>
                 </div>
             </div>
 
-            <button id="btn-retry" class="btn btn--primary">
-                <span class="btn-icon">🔄</span> Jogar Novamente
-            </button>
-            <button id="btn-go-menu" class="btn btn--secondary">
-                <span class="btn-icon">🏠</span> Menu
-            </button>
+            <!-- Botões de Ação -->
+            <div class="gameover-actions">
+                <button id="btn-retry" class="btn btn--primary btn--pulse">
+                    <span class="btn-icon">🚀</span> Jogar Novamente
+                </button>
+                <button id="btn-go-menu" class="btn btn--secondary">
+                    <span class="btn-icon">🏠</span> Menu
+                </button>
+            </div>
+
+            <p class="quick-hint">Pressione <kbd>R</kbd> para reiniciar rapidamente</p>
         </div>
     </section>
 

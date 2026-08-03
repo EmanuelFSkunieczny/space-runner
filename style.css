@@ -719,42 +719,202 @@ kbd {
 }
 
 /* --------------------------------------------------------------------------
-   14. TELA DE GAME OVER
+   14. TELA DE GAME OVER (ESTILIZAÇÃO HUMANIZADA E DINÂMICA)
    -------------------------------------------------------------------------- */
+.gameover-container {
+    max-width: 520px;
+    padding: 2.2rem 2rem;
+}
+
+.gameover-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+}
+
+.go-avatar {
+    font-size: 3rem;
+    line-height: 1;
+    animation: avatarPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes avatarPulse {
+    from {
+        transform: scale(0.95);
+        filter: drop-shadow(0 0 10px rgba(255, 8, 68, 0.4));
+    }
+
+    to {
+        transform: scale(1.08);
+        filter: drop-shadow(0 0 25px rgba(0, 242, 254, 0.6));
+    }
+}
+
 .gameover-title {
     font-family: var(--font-heading);
-    font-size: 2.5rem;
-    color: var(--secondary);
-    text-shadow: 0 0 20px var(--secondary-glow);
+    font-size: 2.2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 25px var(--secondary-glow);
+    letter-spacing: 1px;
+}
+
+.go-rank-badge {
+    display: inline-block;
+    background: rgba(0, 242, 254, 0.12);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.35rem 1rem;
+    border-radius: 50px;
+    box-shadow: 0 0 15px var(--primary-glow);
+    margin-top: 0.2rem;
+    letter-spacing: 0.5px;
+}
+
+/* Banner de Novo Recorde */
+.new-record-banner {
+    background: linear-gradient(135deg, #ffb199 0%, #ff0844 50%, #00f2fe 100%);
+    background-size: 200% 200%;
+    color: #090a16;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: 0.95rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 12px;
+    box-shadow: 0 0 25px var(--gold-glow);
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    animation: shimmerBanner 3s ease infinite, popBanner 0.4s ease-out;
+}
+
+@keyframes shimmerBanner {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes popBanner {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Grid 2x2 de Cards de Estatísticas */
+.gameover-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
     margin-bottom: 1.5rem;
 }
 
-.gameover-stats {
-    background: rgba(0, 0, 0, 0.2);
+.stat-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-glass);
     border-radius: 16px;
-    padding: 1.2rem;
-    margin-bottom: 1.8rem;
+    padding: 0.9rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
-}
-
-.stat-row {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    font-size: 0.95rem;
-    color: var(--text-muted);
+    gap: 0.2rem;
+    transition: all 0.25s ease;
 }
 
-.stat-value {
+.stat-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.stat-card-icon {
+    font-size: 1.3rem;
+}
+
+.stat-card-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-card-value {
     font-family: var(--font-heading);
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--text-main);
 }
 
-.stat-row.highlight .stat-value {
+.stat-card--score .stat-card-value {
+    color: var(--primary);
+    text-shadow: 0 0 10px var(--primary-glow);
+}
+
+.stat-card--best .stat-card-value {
     color: #ffb199;
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+/* Botões de Ação */
+.gameover-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.btn--pulse {
+    animation: btnPulse 2s infinite;
+}
+
+@keyframes btnPulse {
+    0% {
+        box-shadow: 0 4px 20px var(--primary-glow);
+    }
+
+    50% {
+        box-shadow: 0 4px 35px var(--primary-glow), 0 0 15px var(--primary);
+    }
+
+    100% {
+        box-shadow: 0 4px 20px var(--primary-glow);
+    }
+}
+
+.quick-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+.quick-hint kbd {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--border-glass);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    color: var(--text-main);
 }
 
 /* --------------------------------------------------------------------------

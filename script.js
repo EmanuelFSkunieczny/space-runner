@@ -428,6 +428,10 @@ class SpaceRunnerGame {
         this.fpsCounter = document.getElementById('fps-counter');
 
         // Elementos de Game Over
+        this.goTitle = document.getElementById('go-title');
+        this.goAvatar = document.getElementById('go-avatar');
+        this.goRankBadge = document.getElementById('go-rank-badge');
+        this.goNewRecordBanner = document.getElementById('go-new-record-banner');
         this.goScore = document.getElementById('go-score');
         this.goTime = document.getElementById('go-time');
         this.goLevel = document.getElementById('go-level');
@@ -941,21 +945,50 @@ class SpaceRunnerGame {
     }
 
     /**
-     * GAME OVER
+     * GAME OVER HUMANIZADO & DINÂMICO
      */
     gameOver() {
         this.isRunning = false;
         if (this.timerInterval) clearInterval(this.timerInterval);
 
-        this.soundManager.playGameOverSound();
+        // Verificar se bateu o recorde anterior (ou se é a 1ª partida com pontos)
+        const isNewRecord = this.score > 0 && this.score >= this.bestScore;
 
-        // Atualizar estatísticas da tela de Game Over
-        this.goScore.textContent = this.score;
-        this.goTime.textContent = `${this.timeElapsed}s`;
-        this.goLevel.textContent = this.level;
-        this.goBest.textContent = this.bestScore;
+        if (isNewRecord) {
+            this.soundManager.playLevelUpSound(); // Fanfarra de comemoração
+        } else {
+            this.soundManager.playGameOverSound();
+        }
 
-        // Exibir tela de Game Over
+        // Atualizar valores numéricos do HUD/Stats
+        if (this.goScore) this.goScore.textContent = this.score;
+        if (this.goTime) this.goTime.textContent = `${this.timeElapsed}s`;
+        if (this.goLevel) this.goLevel.textContent = this.level;
+        if (this.goBest) this.goBest.textContent = this.bestScore;
+
+        // Determinar Patente do Piloto baseada na Pontuação
+        let rankText = '👩‍🚀 Cadete Recruta';
+        if (this.score >= 500) {
+            rankText = '🌌 Lenda Galáctica';
+        } else if (this.score >= 250) {
+            rankText = '⭐ Comandante da Esquadra';
+        } else if (this.score >= 100) {
+            rankText = '🚀 Piloto Estelar';
+        }
+        if (this.goRankBadge) this.goRankBadge.textContent = rankText;
+
+        // Ajustar visual de acordo com Novo Recorde vs Fim de Jogo normal
+        if (isNewRecord && this.goNewRecordBanner) {
+            this.goNewRecordBanner.removeAttribute('hidden');
+            if (this.goTitle) this.goTitle.textContent = 'NOVO RECORDE!';
+            if (this.goAvatar) this.goAvatar.textContent = '🏆';
+        } else {
+            if (this.goNewRecordBanner) this.goNewRecordBanner.setAttribute('hidden', 'true');
+            if (this.goTitle) this.goTitle.textContent = 'Fim de Jogo';
+            if (this.goAvatar) this.goAvatar.textContent = '💥';
+        }
+
+        // Exibir a tela de Game Over
         this.showScreen(this.gameOverScreen);
     }
 
